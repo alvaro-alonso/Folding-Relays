@@ -1,3 +1,5 @@
+import "utils/pack/bool/pack" as pack;
+import "utils/pack/bool/pack128" as pack128;
 import "utils/casts/bool_128_to_u32_4" as bool_128_to_u32_4;
 import "utils/casts/u32_to_field" as u32_to_field;
 import "utils/casts/u32_to_bits" as u32_to_bits;
@@ -48,17 +50,43 @@ def packTarget(u32 bits) -> u32[4] {
 }
 
 def packMaxVariance(u32 length) -> field {
-    assert(length <= 32);
-    u32 number_ones = length * 4;
-    field mut result = length == 0 ? 0 : 1;
-
-    for u32 i in 0..number_ones {
-        result = (result * 2) + 1;
-    }  
+    field mut result = 0;
+    result = if length == 1 { pack128([...[false; 124], ...[true; 4]]) } else { result };
+    result = if length == 2 { pack128([...[false; 120], ...[true; 8]]) } else { result };
+    result = if length == 3 { pack128([...[false; 116], ...[true; 12]]) } else { result };
+    result = if length == 4 { pack128([...[false; 112], ...[true; 16]]) } else { result };
+    result = if length == 5 { pack128([...[false; 108], ...[true; 20]]) } else { result };
+    result = if length == 6 { pack128([...[false; 104], ...[true; 24]]) } else { result };
+    result = if length == 7 { pack128([...[false; 100], ...[true; 28]]) } else { result };
+    result = if length == 8 { pack128([...[false; 96], ...[true; 32]]) } else { result };
+    result = if length == 9 { pack128([...[false; 92], ...[true; 36]]) } else { result };
+    result = if length == 10 { pack128([...[false; 88], ...[true; 40]]) } else { result };
+    result = if length == 11 { pack128([...[false; 84], ...[true; 44]]) } else { result };
+    result = if length == 12 { pack128([...[false; 80], ...[true; 48]]) } else { result };
+    result = if length == 13 { pack128([...[false; 76], ...[true; 52]]) } else { result };
+    result = if length == 14 { pack128([...[false; 72], ...[true; 56]]) } else { result };
+    result = if length == 15 { pack128([...[false; 68], ...[true; 60]]) } else { result };
+    result = if length == 16 { pack128([...[false; 64], ...[true; 64]]) } else { result };
+    result = if length == 17 { pack128([...[false; 60], ...[true; 68]]) } else { result };
+    result = if length == 18 { pack128([...[false; 56], ...[true; 72]]) } else { result };
+    result = if length == 19 { pack128([...[false; 52], ...[true; 76]]) } else { result };
+    result = if length == 20 { pack128([...[false; 48], ...[true; 80]]) } else { result };
+    result = if length == 21 { pack128([...[false; 44], ...[true; 84]]) } else { result };
+    result = if length == 22 { pack128([...[false; 40], ...[true; 88]]) } else { result };
+    result = if length == 23 { pack128([...[false; 36], ...[true; 92]]) } else { result };
+    result = if length == 24 { pack128([...[false; 32], ...[true; 96]]) } else { result };
+    result = if length == 25 { pack128([...[false; 28], ...[true; 100]]) } else { result };
+    result = if length == 26 { pack128([...[false; 24], ...[true; 104]]) } else { result };
+    result = if length == 27 { pack128([...[false; 20], ...[true; 108]]) } else { result };
+    result = if length == 28 { pack128([...[false; 16], ...[true; 112]]) } else { result };
+    result = if length == 29 { pack128([...[false; 12], ...[true; 116]]) } else { result };
+    result = if length == 30 { pack128([...[false; 8], ...[true; 120]]) } else { result };
+    result = if length == 31 { pack128([...[false; 4], ...[true; 124]]) } else { result };
+    result = if length == 32 { pack128([true; 128]) } else { result };
     return result;
 }
 
-def get_bit_length<L>(bool[L] bits) -> u32 {
+def getBitLength<L>(bool[L] bits) -> u32 {
     u32 mut length = 0;
     for u32 i in 0..L {
         u32 index = L - i;

@@ -1,0 +1,33 @@
+import "utils/casts/u32_to_field" as u32_to_field;
+import "utils/casts/u32_to_bits" as u32_to_bits;
+import "utils/pack/u32/pack128" as pack128;
+import "utils/pack/bool/unpack128" as unpack128;
+from "./utils" import bytesToBigEndian, packTarget, packMaxVariance, getBitLength;
+
+
+
+def main (u32[8] epoch, u32[4] next_epoch_head) -> field[2] {
+    u32 time_head = bytesToBigEndian(epoch[2]);
+    u32 time_tail = bytesToBigEndian(epoch[6]);
+
+    u32[4] current_target = packTarget(bytesToBigEndian(epoch[3]));
+    u32 time_delta = time_tail - time_head;
+    u32 target_time_delta = 1209600; // 2016 * 600 (time interval of 10 minutes)
+    field mut target = pack128(current_target) * u32_to_field(time_delta); // target_time_delta
+
+    u32[4] encoded_target = packTarget(bytesToBigEndian(next_epoch_head[3]));
+    field encoded_target_extended = pack128(encoded_target) * u32_to_field(target_time_delta);
+    
+    // The encoding of targets uses a floor function, the comparison of a calculated target may therefore fail
+    // Therefore, a maximum variance is calculated that is one hex digit in the encoding
+    bool[24] next_target = u32_to_bits((bytesToBigEndian(next_epoch_head[3]) << 8) >> 8)[8..32];
+    u32 length = getBitLength(unpack128(target)) - getBitLength(next_target);
+    // field maxVariance = packMaxVariance(length);
+    // // int('ffff' + 10 * '00', 16) * 2016 * 600 = 95832923060582736897701037735936000
+    // target = if target > 95832923060582736897701037735936000 ? 95832923060582736897701037735936000 : target;
+    // field mut delta = target - encoded_target_extended;
+    // delta = if target >= encoded_target_extended ? delta : maxVariance + 1;
+    
+    // assert(delta <= maxVariance);
+    return [0, 0];
+}

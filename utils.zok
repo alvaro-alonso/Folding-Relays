@@ -57,3 +57,15 @@ def packMaxVariance(u32 length) -> field {
     }  
     return result;
 }
+
+def get_bit_length<L>(bool[L] bits) -> u32 {
+    u32 mut length = 0;
+    for u32 i in 0..L {
+        u32 index = L - i;
+        length = if length == 0 && bits[i] == true { index } else { length };
+    }
+
+    u32 remainder = length % 4;
+    length = remainder > 0 ? (length >> 2) + 1 : length >> 4; // divide by 4 
+    return length;
+}

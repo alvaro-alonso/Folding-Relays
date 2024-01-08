@@ -1,0 +1,59 @@
+import "utils/casts/bool_128_to_u32_4" as bool_128_to_u32_4;
+import "utils/casts/u32_to_field" as u32_to_field;
+import "utils/casts/u32_to_bits" as u32_to_bits;
+
+
+// swap endians algo take from: https://www.geeksforgeeks.org/bit-manipulation-swap-endianness-of-a-number/
+def bytesToBigEndian(u32 value) -> u32 {
+    u32 mut leftmost_byte = (value & 0x000000FF) >> 0;
+    u32 mut left_middle_byte = (value & 0x0000FF00) >> 8;
+    u32 mut right_middle_byte = (value & 0x00FF0000) >> 16;
+    u32 mut rightmost_byte = (value & 0xFF000000) >> 24;
+ 
+    leftmost_byte = leftmost_byte << 24;
+    left_middle_byte = left_middle_byte << 16;
+    right_middle_byte = right_middle_byte << 8;
+ 
+    return (leftmost_byte | left_middle_byte | right_middle_byte | rightmost_byte);
+}
+
+def packTarget(u32 bits) -> u32[4] {
+    u32 mut flag = bits >> 24;
+    flag = flag - 23;
+    assert(flag >= 0 && flag <= 8);
+
+    u32 target = bits & 0x00FFFFFF;
+    assert(bits == ((flag << 24) + target));
+    bool[24] target_bits = u32_to_bits(target)[8..32];
+
+    bool[128] result = if flag == 0 { [...[false; 72], ...target_bits, ...[false; 32]] } else {
+        if flag == 1 { [...[false; 64], ...target_bits, ...[false; 40]] } else {
+            if flag == 2 { [...[false; 56], ...target_bits, ...[false; 48]] } else {
+                if flag == 3 { [...[false; 48], ...target_bits, ...[false; 56]] } else {
+                    if flag == 4 { [...[false; 40], ...target_bits, ...[false; 64]] } else {
+                        if flag == 5 { [...[false; 32], ...target_bits, ...[false; 72]] } else {
+                            if flag == 6 { [...[false; 24], ...target_bits, ...[false; 80]] } else {
+                                if flag == 7 { [...[false; 16], ...target_bits, ...[false; 88]] } else {
+                                    if flag == 8 { [...[false; 8], ...target_bits, ...[false; 96]] } else {
+                                    [false; 128] }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return bool_128_to_u32_4(result);
+}
+
+def packMaxVariance(u32 length) -> field {
+    assert(length <= 32);
+    u32 number_ones = length * 4;
+    field mut result = length == 0 ? 0 : 1;
+
+    for u32 i in 0..number_ones {
+        result = (result * 2) + 1;
+    }  
+    return result;
+}

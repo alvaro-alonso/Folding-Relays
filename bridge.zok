@@ -4,27 +4,9 @@ import "utils/casts/bool_128_to_u32_4" as bool_128_to_u32_4;
 import "hashes/sha256/1024bitPadded.zok" as sha256for1024;
 import "hashes/sha256/256Padded" as sha256for254;
 import "./getHexLength.zok" as getHexLength;
+from "./utils" import bytesToBigEndian, packTarget;
 import "./compute_merkle_root.zok" as compute_merkle_root;
 
-// swap endians algo take from: https://www.geeksforgeeks.org/bit-manipulation-swap-endianness-of-a-number/
-def bytesToBigEndian(u32 value) -> u32 {
-    u32 mut leftmost_byte = (value & 0x000000FF) >> 0;
-    u32 mut left_middle_byte = (value & 0x0000FF00) >> 8;
-    u32 mut right_middle_byte = (value & 0x00FF0000) >> 16;
-    u32 mut rightmost_byte = (value & 0xFF000000) >> 24;
- 
-    leftmost_byte = leftmost_byte << 24;
-    left_middle_byte = left_middle_byte << 16;
-    right_middle_byte = right_middle_byte << 8;
- 
-    return (leftmost_byte | left_middle_byte | right_middle_byte | rightmost_byte);
-}
-
-def toBigEndian(field[24] value) -> (field[24]):
-    return [
-            ...value[16..24],
-            ...value[8..16],
-            ...value[0..8]]
 
 def toBigEndian(field[128] value) -> (field[128]):
     return [
@@ -81,35 +63,7 @@ def packMaxVariance(field length) -> (field):
     result = if length == 32 then pack128([1; 128]) else result fi
 return result
 
-def packTarget(u32 bits) -> u32[4] {
-    u32 mut flag = bits >> 24;
-    flag = flag - 23;
-    assert(flag >= 0 && flag <= 8);
 
-    u32 target = bits & 0x00FFFFFF;
-    assert(bits == ((flag << 24) + target));
-    bool[24] target_bits = u32_to_bits(target)[8..32];
-
-    bool[128] result = if flag == 0 { [...[false; 72], ...target_bits, ...[false; 32]] } else {
-        if flag == 1 { [...[false; 64], ...target_bits, ...[false; 40]] } else {
-            if flag == 2 { [...[false; 56], ...target_bits, ...[false; 48]] } else {
-                if flag == 3 { [...[false; 48], ...target_bits, ...[false; 56]] } else {
-                    if flag == 4 { [...[false; 40], ...target_bits, ...[false; 64]] } else {
-                        if flag == 5 { [...[false; 32], ...target_bits, ...[false; 72]] } else {
-                            if flag == 6 { [...[false; 24], ...target_bits, ...[false; 80]] } else {
-                                if flag == 7 { [...[false; 16], ...target_bits, ...[false; 88]] } else {
-                                    if flag == 8 { [...[false; 8], ...target_bits, ...[false; 96]] } else {
-                                    [false; 128] }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    };
-    return bool_128_to_u32_4(result);
-}
 
 def get_bit_length_bits(field[24] bits) -> (field):
     field result = 0

@@ -32,15 +32,15 @@ def zkRelay_cli(ctx, no_verbose, config_file):
     use 'cli COMMAND [-h, --help]'
     """
     # check if correct zokrates version is used. (currently supported 0.5.1)
-    result = subprocess.run(['zokrates', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if result.returncode is not 0:
-        print(colored('Was not able to execute zokrates.', 'red') + ' Did you install it? (currently supported version = {})'.format(SUPPORTED_VERSION_ZOKRATES))
-        exit(-1)
-    correct_version = re.search('.*{}'.format(SUPPORTED_VERSION_ZOKRATES), result.stdout.decode("utf-8"))
-    if correct_version is None:
-        curr_version = re.search('(\d+((\.\d+)?(\.\d+)?))', result.stdout.decode('utf-8'))
-        print(colored('Unsupported version of zokrates.({})'.format(curr_version.group(0)), 'red') + 'Currently supported: {}'.format(SUPPORTED_VERSION_ZOKRATES))
-        exit(-1)
+    # result = subprocess.run(['zokrates', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # if result.returncode is not 0:
+    #     print(colored('Was not able to execute zokrates.', 'red') + ' Did you install it? (currently supported version = {})'.format(SUPPORTED_VERSION_ZOKRATES))
+    #     exit(-1)
+    # correct_version = re.search('.*{}'.format(SUPPORTED_VERSION_ZOKRATES), result.stdout.decode("utf-8"))
+    # if correct_version is None:
+    #     curr_version = re.search('(\d+((\.\d+)?(\.\d+)?))', result.stdout.decode('utf-8'))
+    #     print(colored('Unsupported version of zokrates.({})'.format(curr_version.group(0)), 'red') + 'Currently supported: {}'.format(SUPPORTED_VERSION_ZOKRATES))
+    #     exit(-1)
 
     # load conf file to pass to cmds
     config_file_path = config_file if config_file is not None else './conf/zkRelay-cli.toml'

@@ -1,5 +1,4 @@
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from bitstring import BitArray
+from bitarray import bitarray
 
 GENESIS_BLOCK_HASH = '000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f'
 
@@ -41,13 +40,13 @@ def getBlocksInRange(ctx, i, j):
 
 def hexToDecimalZokratesInput(input):
     preimage = bytes.fromhex(input)
-    bitarray = BitArray(bytes=preimage)
+    bitarray = bitarray(bytes=preimage)
     return [str(int(i, 2)) for i in splitStringFromBack(bitarray.bin, 128)]
 
 
 def hexToBinaryZokratesInput(input):
     preimage = bytes.fromhex(input)
-    bitarray = BitArray(bytes=preimage)
+    bitarray = bitarray(bytes=preimage)
     return " ".join(bitarray.bin)
 
 

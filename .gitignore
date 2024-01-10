@@ -17,3 +17,5 @@ verify_merkle_proof.zok
 compute_merkle_root.zok
 zkRelay.egg-info
 .vscode
+
+**.ipynb_checkpoints

@@ -7,4 +7,4 @@ host = "localhost"
 port = "8332"
 
 [zokrates_file_generator]
-batch_size = 4
+batch_size = 2

@@ -2,12 +2,20 @@ import json
 from pprint import pprint
 import hashlib
 import binascii
+import sys
 
 
 def littleEndian(string):
     splited = [str(string)[i:i + 2] for i in range(0, len(str(string)), 2)]
     splited.reverse()
     return "".join(splited)
+
+def write_prety_print_json(file_name: str, output) -> None:
+    assert(file_name[-5:] == ".json")
+    with open(file_name, "w") as output_file:
+        output_file.write(
+            json.dumps(output, indent=4)
+        )
 
 # convert a long string of numbers into a u32 array (the format of zokrates)
 def string_to_u32(val: str) -> [int]:
@@ -68,13 +76,29 @@ def generate_witness(number_of_blocks: int) -> str:
 
     # put together witness
     zok_headers = [string_to_u32(header) for header in headers]
-    epoch_head = zok_headers[0][16:]
     first_prev_block_hash = string_to_u32(littleEndian(data[0]['previousblockhash']))
-    witness = epoch_head + first_prev_block_hash + [y for x in zok_headers for y in x]
-    assert(len(witness) == 12 + (20 * number_of_blocks))
+    witness = first_prev_block_hash + [y for x in zok_headers for y in x]
+    assert(len(witness) == 8 + (20 * number_of_blocks))
+    write_prety_print_json("../circuit/init.json", first_prev_block_hash)
+    headers = []
+    for header in zok_headers:
+        headers.append([header[i:i+4] for i in range(0, len(header), 4)])
+
+    write_prety_print_json("../circuit/steps.json", headers)
     return ' '.join(witness)
 
 if __name__ == '__main__':
-    blocks = generate_witness(2)
-    print(blocks)
+    number_of_blocks = sys.argv[1]
+    try:
+        blocks_int = int(number_of_blocks)
+        assert(blocks_int <= 10 and blocks_int > 0)
+        blocks = generate_witness(blocks_int)
+    except ValueError:
+        print("Unable to parse code as an integer")
+        sys.exit(1)
+    except AssertionError:
+        print("block number most be between 1 and 10")
+        sys.exit(1)
+    
+    
     

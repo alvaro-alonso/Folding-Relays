@@ -1,0 +1,65 @@
+import "utils/pack/u32/pack128" as pack128;
+import "utils/pack/bool/unpack128" as unpack128;
+import "utils/casts/u32_to_field" as u32_to_field;
+import "utils/casts/field_to_u32" as field_to_u32;
+import "utils/casts/u32_to_bits" as u32_to_bits;
+import "hashes/sha256/1024bit.zok" as sha1024;
+import "hashes/sha256/512bit" as sha256;
+// from "./compute_merkle_root" import generateMerkleTree;
+from "./utils" import bytesToBigEndian, packTarget, packMaxVariance, getBitLength, u32ArrayToBigEndian;
+
+
+def validate_block_header(u32[4] reference_target, u32[8] prev_block_hash, u32[5][4] preimage) -> u32[8] {
+    u32[4] a = preimage[0];
+    u32[4] b = preimage[1];
+    u32[4] c = preimage[2];
+    u32[4] d = preimage[3];
+    u32[4] e = preimage[4];
+
+    // ensure the previous calculated hash matches the `previous_hash` of the current block header
+    u32[8] encoded_prev_block_hash = [...a[1..4], ...b[0..4], c[0]];
+    assert(encoded_prev_block_hash == prev_block_hash);
+
+    // converting to big endian is not necessary here, as reference target is encoded little endian
+    u32[4] current_target = [...[0x00000000; 3], e[2]];
+    assert(current_target == reference_target);
+
+    // first hash, block header
+    u32[8] preimage1 = [...a, ...b];
+    u32[8] preimage2 = [...c, ...d];
+    u32[8] preimage3 = [...e, ...[0x80000000, ...[0x00000000; 3]]];
+    u32[8] mut padding = [...[0x00000000; 7], 0x00000280];
+    u32[8] intermediary = sha1024(preimage1, preimage2, preimage3, padding);
+    
+    // second hash round
+    padding = [0x80000000, ...[0x00000000; 6], 0x00000100];
+    u32[8] r = sha256(intermediary, padding);
+    
+    field target = pack128(packTarget(bytesToBigEndian(e[2])));
+    field r_var = pack128(u32ArrayToBigEndian(r[4..8]));
+    assert(target > r_var);
+
+    return r;
+}
+
+const u32 TREE_DEPTH = 1;
+const u32 BLOCKS = field_to_u32(2 ** TREE_DEPTH);
+
+def main(u32[4] first_block_epoch, u32[8] prev_block_hash, private u32[BLOCKS][5][4] headers) -> u32[8] {
+   
+    assert(TREE_DEPTH < 32);
+    u32[BLOCKS][8] mut blocks = [[0x00000000; 8]; BLOCKS];
+    u32[8] mut previous_block = prev_block_hash;
+
+    for u32 i in 0..BLOCKS {
+        blocks[i] = validate_block_header([...[0x00000000; 3], headers[i][4][2]], previous_block, headers[i]);
+        previous_block = blocks[i];
+        log("Block Nr.{} correctly validated!", i);
+    }
+
+    // field merkle_root = generateMerkleTree(blocks, TREE_DEPTH);
+
+    return [ ...blocks[BLOCKS - 1]]; // , merkle_root);
+}
+
+    

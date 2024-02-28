@@ -42,24 +42,16 @@ def validate_block_header(u32[4] reference_target, u32[8] prev_block_hash, u32[5
     return r;
 }
 
-const u32 TREE_DEPTH = 1;
-const u32 BLOCKS = field_to_u32(2 ** TREE_DEPTH);
 
-def main(u32[4] first_block_epoch, u32[8] prev_block_hash, private u32[BLOCKS][5][4] headers) -> u32[8] {
-   
-    assert(TREE_DEPTH < 32);
-    u32[BLOCKS][8] mut blocks = [[0x00000000; 8]; BLOCKS];
-    u32[8] mut previous_block = prev_block_hash;
+def main(public u32[8] prev_block_hash, private u32[5][4] block_header) -> u32[8] {
 
-    for u32 i in 0..BLOCKS {
-        blocks[i] = validate_block_header([...[0x00000000; 3], headers[i][4][2]], previous_block, headers[i]);
-        previous_block = blocks[i];
-        log("Block Nr.{} correctly validated!", i);
-    }
-
-    // field merkle_root = generateMerkleTree(blocks, TREE_DEPTH);
-
-    return [ ...blocks[BLOCKS - 1]]; // , merkle_root);
+    u32[8] block_hash = validate_block_header(
+        [...[0x00000000; 3], block_header[4][2]], 
+        prev_block_hash, 
+        block_header
+    );
+    log("Block Nr.{} correctly validated!", block_hash);
+    return block_hash;
 }
 
     

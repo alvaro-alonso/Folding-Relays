@@ -1,0 +1,35 @@
+import "utils/pack/bool/nonStrictUnpack256" as unpack256;
+from "field" import FIELD_MIN, FIELD_MAX;
+
+def testZero() -> bool {
+    bool[256] zero_bool = [false; 256];
+    assert(unpack256(FIELD_MIN) == zero_bool);
+    assert(unpack256(FIELD_MAX + 1) == zero_bool);
+    return true;
+}
+
+def testFive() -> bool {
+    bool[256] five_bool = [...[false; 253], ...[true, false, true]];
+    assert(unpack256(FIELD_MIN + 5) == five_bool);
+    assert(unpack256(FIELD_MAX + 1 + 5) == five_bool);
+    return true;
+}
+
+def testLarge() -> bool {
+    bool[256] b = unpack256(14474011154664524427946373126085988481658748083205070504932198000989141204991);
+    assert(b == [false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]);
+    return true;
+}
+
+def testMax(bool[256] max_bool) -> bool {
+    assert(unpack256(FIELD_MAX) == max_bool);
+    return true;
+}
+
+ def main(public bool[256] max_bool) {
+    assert(testFive());
+    assert(testMax(max_bool));
+    assert(testZero());
+    assert(testLarge());
+    return;
+}
